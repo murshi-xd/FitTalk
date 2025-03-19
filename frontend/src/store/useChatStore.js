@@ -11,6 +11,8 @@ export const useChatStore = create((set, get) => ({
     isMessagesLoading: false,
     lastMessageTimestamps: {}, // Track last activity
     lastMessages: {}, // Store last message per user
+    isContactLoading: null,
+    ContactSelected:null,
 
     // Fetch all users
     getUsers: async () => {
@@ -118,5 +120,6 @@ export const useChatStore = create((set, get) => ({
 
     // Select a user for chat
     setSelectedUser: (selectedUser) => set({ selectedUser }),
+    setContactSelected: (ContactSelected) => set({ ContactSelected }),
 
 }));

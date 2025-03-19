@@ -27,7 +27,7 @@ const Navbar = () => {
 
           {authUser && (
               <>
-                <Link to="/" className={`btn btn-sm gap-2`} onClick={()=> SelectedUser(null)}>
+                <Link to="/" className={`btn btn-sm gap-2`} onClick={()=> selectedUser(null)}>
                   <MessageCircle className="size-5" />
                   <span className="hidden sm:inline">Chat</span>
                 </Link>

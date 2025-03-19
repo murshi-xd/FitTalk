@@ -18,10 +18,10 @@ const Sidebar = () => {
 
   useEffect(() => {
     users.forEach(user => {
-      if (!lastMessages[user._id]) {
+      if (lastMessages[user._id] === undefined) {
         getMessages(user._id); // Fetch messages if no last message is available
       }
-    });
+    }); 
   }, [users, getMessages, lastMessages]);
 
   const filteredUsers = showOnlineOnly

@@ -17,22 +17,25 @@ export const useChatStore = create((set, get) => ({
         set({ isUsersLoading: true });
         try {
             const res = await axiosInstance.get("/messages/users");
-            // Initialize lastMessages from backend (if available)
+    
+            // Fetch last messages for each user
             const lastMessagesData = {};
-            res.data.forEach(user => {
-                lastMessagesData[user._id] = user.lastMessage || null;
+            for (const user of res.data) {
+                const messageRes = await axiosInstance.get(`/messages/${user._id}`);
+                lastMessagesData[user._id] = messageRes.data.length ? messageRes.data[messageRes.data.length - 1] : null;
+            }
+    
+            set({ 
+                users: res.data, 
+                lastMessages: lastMessagesData  // Set last messages immediately
             });
-
-        set({ 
-            users: res.data, 
-            lastMessages: lastMessagesData  // Ensure lastMessages is populated
-        });
         } catch (error) {
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Failed to fetch users");
         } finally {
             set({ isUsersLoading: false });
         }
     },
+    
 
     // Fetch messages for selected user
     getMessages: async (userId) => {

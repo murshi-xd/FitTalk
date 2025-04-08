@@ -1,11 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import { LogOut, MessageCircle, MessageSquare, Settings, User } from "lucide-react";
+import { Bot, BotIcon, BotMessageSquare, LogOut, MessageCircle, MessageSquare, Settings, User } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
-  const {selectedUser} = useChatStore.getState()
+  const navigate = useNavigate();
+  const selectMeddyBotUser = useChatStore((state) => state.selectMeddyBotUser);
 
   return (
     <header
@@ -27,13 +28,18 @@ const Navbar = () => {
 
           {authUser && (
               <>
-                <Link to="/" className={`btn btn-sm gap-2`} onClick={()=> selectedUser(null)}>
-                  <MessageCircle className="size-5" />
-                  <span className="hidden sm:inline">Chat</span>
-                </Link>
+                    <button
+                      className="btn btn-sm gap-2"
+                      onClick={async () => {
+                        await selectMeddyBotUser();
+                        navigate("/"); // Go back to home to show chat UI
+                      }}
+                    >
+                      <Bot className="size-5" />
+                      <span className="hidden sm:inline">Meddy-GPT</span>
+                    </button>
               </>
             )}
-
 
             <Link
               to={"/settings"}

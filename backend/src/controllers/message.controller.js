@@ -21,6 +21,7 @@ export const getUsersForSidebar = async (req, res) => {
     }
 };
 
+
 export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
@@ -53,7 +54,7 @@ export const sendMessage = async (req, res) => {
       imageUrl = uploadResponse.secure_url;
     }
 
-    // Store user's message in DB
+    // Create and save the user's message
     const newMessage = new Message({
       senderId,
       receiverId,
@@ -63,18 +64,27 @@ export const sendMessage = async (req, res) => {
 
     await newMessage.save();
 
-    // Send the initial response to the client immediately
-    res.status(200).json(newMessage);
-
-    // After sending the response, avoid sending it again.
+    // Emit message to receiver if online
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
-    // Check if the message is directed at the bot
+    // ✅ Send response to sender once
+    res.status(200).json(newMessage);
+
+    // === Bot logic ===
     if (receiverId === process.env.BOT_USER_ID && text) {
-      // Make the API request to Flask
+      const userSocketId = getReceiverSocketId(senderId);
+
+      // ⌛ Emit botTyping event BEFORE Flask call
+      if (userSocketId) {
+        io.to(userSocketId).emit("botTyping", {
+          senderId: process.env.BOT_USER_ID,
+        });
+      }
+
+      // 🧠 Call Flask API
       const flaskResponse = await axios.post(process.env.FLASK_API_URL, {
         message: text,
         user_id: senderId,
@@ -82,7 +92,7 @@ export const sendMessage = async (req, res) => {
 
       const botReply = flaskResponse.data.reply;
 
-      // Create a new message for the bot response
+      // 📨 Save bot reply
       const botMessage = new Message({
         senderId: process.env.BOT_USER_ID,
         receiverId: senderId,
@@ -90,11 +100,9 @@ export const sendMessage = async (req, res) => {
         is_bot: true,
       });
 
-      // Save the bot message to DB
       await botMessage.save();
 
-      // Send the bot's reply in real-time
-      const userSocketId = getReceiverSocketId(senderId);
+      // 📡 Emit bot reply
       if (userSocketId) {
         io.to(userSocketId).emit("newMessage", botMessage);
       }
@@ -102,6 +110,10 @@ export const sendMessage = async (req, res) => {
 
   } catch (error) {
     console.log("Error in sendMessage controller", error.message);
-    return res.status(500).json({ message: "Internal server error" });
+
+    // Only send response if not already sent
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Internal server error" });
+    }
   }
 };

@@ -3,9 +3,11 @@ import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { PlusCircleIcon, Search, Users } from "lucide-react";
-import ChatSearch from "./ChatSearch";
+import ChatSearch from "./ChatSearch";        
+
 
 const Sidebar = () => {
+
   const { getUsers, getMessages,  users, selectedUser, setSelectedUser, isUsersLoading, lastMessageTimestamps,lastMessages,setContactSelected } = useChatStore();
 
   const { onlineUsers } = useAuthStore();
@@ -24,9 +26,13 @@ const Sidebar = () => {
     }); 
   }, [users, getMessages, lastMessages]);
 
+  const nonBotUsers = users.filter(
+    (user) => user.is_bot !== true && user.is_bot !== "true"
+  );
+  
   const filteredUsers = showOnlineOnly
-    ? users.filter((user) => onlineUsers.includes(user._id))
-    : users;
+    ? nonBotUsers.filter((user) => onlineUsers.includes(user._id))
+    : nonBotUsers;
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
       return (lastMessageTimestamps[b._id] || 0) - (lastMessageTimestamps[a._id] || 0);
@@ -77,7 +83,7 @@ const Sidebar = () => {
               ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
             `}
           >
-            <div className="relative mx-auto lg:mx-0">
+            <div className="relative mx-auto lg:mx-0 flex-shrink-0">
               <img
                 src={user.profilePic || "/avatar.png"}
                 alt={user.name}

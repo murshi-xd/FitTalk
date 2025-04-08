@@ -37,11 +37,12 @@ export const useChatStore = create((set, get) => ({
             set({ isUsersLoading: false });
         }
     },
-    
+
 
     // Fetch messages for selected user
     getMessages: async (userId) => {
         set({ isMessagesLoading: true });
+        
         try {
             const res = await axiosInstance.get(`/messages/${userId}`);
             set({
@@ -51,6 +52,8 @@ export const useChatStore = create((set, get) => ({
                     [userId]: res.data.length ? res.data[res.data.length - 1] : null, // Store last message
                 },
             });
+
+
         } catch (error) {
             toast.error(error.response.data.message);
         } finally {
@@ -121,5 +124,22 @@ export const useChatStore = create((set, get) => ({
     // Select a user for chat
     setSelectedUser: (selectedUser) => set({ selectedUser }),
     setContactSelected: (ContactSelected) => set({ ContactSelected }),
+    
+    selectMeddyBotUser: async () => {
+        const { users, getUsers, setSelectedUser } = get();
+    
+        if (users.length === 0) {
+            await getUsers(); // Fetch users if not already loaded
+        }
+    
+        // Search by is_bot flag (as string or boolean)
+        const botUser = get().users.find((user) => user.is_bot === "true" || user.is_bot === true);
+    
+        if (botUser) {
+            set({ selectedUser: botUser });
+        } else {
+            toast.error("Meddy-GPT bot not found");
+        }
+    },
 
 }));

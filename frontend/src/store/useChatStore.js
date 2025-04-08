@@ -9,27 +9,40 @@ export const useChatStore = create((set, get) => ({
     selectedUser: null,
     isUsersLoading: false,
     isMessagesLoading: false,
-    lastMessageTimestamps: {}, // Track last activity
-    lastMessages: {}, // Store last message per user
+    lastMessageTimestamps: {},
+    lastMessages: {},
     isContactLoading: null,
-    ContactSelected:null,
+    ContactSelected: null,
 
-    // Fetch all users
     getUsers: async () => {
         set({ isUsersLoading: true });
         try {
             const res = await axiosInstance.get("/messages/users");
-    
-            // Fetch last messages for each user
+
             const lastMessagesData = {};
+            const lastMessageTimestampsData = {};
+
             for (const user of res.data) {
                 const messageRes = await axiosInstance.get(`/messages/${user._id}`);
-                lastMessagesData[user._id] = messageRes.data.length ? messageRes.data[messageRes.data.length - 1] : null;
+                const lastMessage = messageRes.data.length ? messageRes.data[messageRes.data.length - 1] : null;
+
+                lastMessagesData[user._id] = lastMessage;
+
+                if (lastMessage?.createdAt) {
+                    lastMessageTimestampsData[user._id] = new Date(lastMessage.createdAt).getTime();
+                }
             }
-    
-            set({ 
-                users: res.data, 
-                lastMessages: lastMessagesData  // Set last messages immediately
+
+            const sortedUsers = [...res.data].sort((a, b) => {
+                const aTime = lastMessageTimestampsData[a._id] || 0;
+                const bTime = lastMessageTimestampsData[b._id] || 0;
+                return bTime - aTime;
+            });
+
+            set({
+                users: sortedUsers,
+                lastMessages: lastMessagesData,
+                lastMessageTimestamps: lastMessageTimestampsData,
             });
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to fetch users");
@@ -37,6 +50,7 @@ export const useChatStore = create((set, get) => ({
             set({ isUsersLoading: false });
         }
     },
+
 
 
     // Fetch messages for selected user

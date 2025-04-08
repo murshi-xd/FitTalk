@@ -8,7 +8,12 @@ import ChatSearch from "./ChatSearch";
 
 const Sidebar = () => {
 
-  const { getUsers, getMessages,  users, selectedUser, setSelectedUser, isUsersLoading, lastMessageTimestamps,lastMessages,setContactSelected } = useChatStore();
+  // Selectors for reactive parts
+  const lastMessages = useChatStore((state) => state.lastMessages);
+  const lastMessageTimestamps = useChatStore((state) => state.lastMessageTimestamps);
+
+  // Destructure the rest
+  const { getUsers, getMessages, users, selectedUser, setSelectedUser, isUsersLoading, setContactSelected } = useChatStore();
 
   const { onlineUsers } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);

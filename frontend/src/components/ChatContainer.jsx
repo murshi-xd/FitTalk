@@ -1,5 +1,6 @@
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef } from "react";
+import { io } from "socket.io-client";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -15,7 +16,10 @@ const ChatContainer = () => {
     selectedUser,
     subscribeToMessages,
     unsubscribeFromMessages,
+    setBotTyping,
+    botTyping,
   } = useChatStore();
+
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
 
@@ -31,6 +35,21 @@ const ChatContainer = () => {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+  
+  useEffect(() => {
+    const socket = io();
+
+    // Listen for the bot typing event and update the botTyping state
+    socket.on("botTyping", (data) => {
+      if (data.senderId === process.env.BOT_USER_ID) {
+        setBotTyping(data.typing); // Set bot typing to true or false
+      }
+    });
+
+    return () => {
+      socket.off("botTyping"); // Clean up the socket listener
+    };
+  }, [setBotTyping]);
 
   if (isMessagesLoading) {
     return (
@@ -41,6 +60,9 @@ const ChatContainer = () => {
       </div>
     );
   }
+
+
+  
 
   // Group messages by date
   const groupedMessages = messages.reduce((acc, message) => {
@@ -121,6 +143,27 @@ const ChatContainer = () => {
             )}
           </div>
         )}
+
+        {/* Show bot typing bubble */}
+        {botTyping && selectedUser?.is_bot && (
+        <div className="chat chat-start">
+          <div className="chat-image avatar">
+            <div className="size-10 rounded-full border ">
+              <img
+                src={selectedUser.profilePic || "/avatar.png"}
+                alt="Bot"
+              />
+            </div>
+          </div>
+          <div className="chat-header mb-1">
+            <time className="text-xs opacity-50 ml-1">typing...</time>
+          </div>
+          <div className="chat-bubble shadow-md flex items-center gap-2">
+            <span className="animate-pulse">🤖 Meddy-GPT is typing...</span>
+          </div>
+        </div>
+      )}
+
       </div>
 
       <MessageInput />

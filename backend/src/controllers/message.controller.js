@@ -105,6 +105,9 @@ export const sendMessage = async (req, res) => {
       // 📡 Emit bot reply
       if (userSocketId) {
         io.to(userSocketId).emit("newMessage", botMessage);
+
+        // ❌ Stop the bot typing indicator after the bot reply is sent
+        io.to(userSocketId).emit("botTyping", { senderId: process.env.BOT_USER_ID, typing: false });
       }
     }
 

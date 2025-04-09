@@ -13,6 +13,8 @@ export const useChatStore = create((set, get) => ({
     lastMessages: {},
     isContactLoading: null,
     ContactSelected: null,
+    botTyping: false,
+    botTypingTimeout: null,
 
     getUsers: async () => {
         set({ isUsersLoading: true });
@@ -99,28 +101,53 @@ export const useChatStore = create((set, get) => ({
         }
     },
 
-    // Listen for new messages
+    // Fetch messages for selected user
     subscribeToMessages: () => {
         const socket = useAuthStore.getState().socket;
-        
+    
         try {
+            socket.on("botTyping", ({ senderId }) => {
+                const selectedUser = get().selectedUser;
+                if (selectedUser && selectedUser._id === senderId) {
+                    set({ botTyping: true });
+    
+                    // Set a timeout to clear botTyping if no message arrives in 10s
+                    const timeout = setTimeout(() => {
+                        set({ botTyping: false });
+                    }, 10000);
+    
+                    set({ botTypingTimeout: timeout });
+                }
+            });
+    
             socket.on("newMessage", (newMessage) => {
+                const isBotMessage =
+                    get().selectedUser?._id === newMessage.senderId && newMessage.is_bot;
+    
                 set((state) => ({
                     messages:
                         state.selectedUser?._id === newMessage.senderId
-                            ? [...state.messages, newMessage]  // Append message if chatting with sender
-                            : state.messages,  // Keep existing messages otherwise
+                            ? [...state.messages, newMessage]
+                            : state.messages,
     
                     lastMessages: {
                         ...state.lastMessages,
-                        [newMessage.senderId]: newMessage, // Store last received message
+                        [newMessage.senderId]: newMessage,
                     },
-                    
+    
                     lastMessageTimestamps: {
                         ...state.lastMessageTimestamps,
                         [newMessage.senderId]: Date.now(),
                     },
+    
+                    botTyping: isBotMessage ? false : state.botTyping, // ✅ Stop botTyping when bot replies
                 }));
+    
+                // Clear any pending timeout when bot sends message
+                if (isBotMessage && get().botTypingTimeout) {
+                    clearTimeout(get().botTypingTimeout);
+                    set({ botTypingTimeout: null });
+                }
             });
             
         } catch (error) {
@@ -138,6 +165,7 @@ export const useChatStore = create((set, get) => ({
     // Select a user for chat
     setSelectedUser: (selectedUser) => set({ selectedUser }),
     setContactSelected: (ContactSelected) => set({ ContactSelected }),
+    setBotTyping: (typingStatus) => set({ botTyping: typingStatus }),
     
     selectMeddyBotUser: async () => {
         const { users, getUsers, setSelectedUser } = get();

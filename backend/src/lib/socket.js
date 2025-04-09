@@ -36,4 +36,12 @@ io.on("connection", (socket) => {
   });
 });
 
+io.on("botTyping", (data) => {
+  console.log("🔴 botTyping event received:", data); // ✅ Debugging log
+
+  if (data.senderId === process.env.BOT_USER_ID) {
+    io.emit("botTyping", data);
+  }
+});
+
 export { io, app, server };

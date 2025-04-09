@@ -110,7 +110,13 @@ export const useChatStore = create((set, get) => ({
                 const selectedUser = get().selectedUser;
                 if (selectedUser && selectedUser._id === senderId) {
                     set({ botTyping: true });
-
+    
+                    // Set a timeout to clear botTyping if no message arrives in 10s
+                    const timeout = setTimeout(() => {
+                        set({ botTyping: false });
+                    }, 10000);
+    
+                    set({ botTypingTimeout: timeout });
                 }
             });
     

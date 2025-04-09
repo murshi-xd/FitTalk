@@ -110,13 +110,7 @@ export const useChatStore = create((set, get) => ({
                 const selectedUser = get().selectedUser;
                 if (selectedUser && selectedUser._id === senderId) {
                     set({ botTyping: true });
-    
-                    // Set a timeout to clear botTyping if no message arrives in 10s
-                    const timeout = setTimeout(() => {
-                        set({ botTyping: false });
-                    }, 10000);
-    
-                    set({ botTypingTimeout: timeout });
+
                 }
             });
     
@@ -139,14 +133,16 @@ export const useChatStore = create((set, get) => ({
                         ...state.lastMessageTimestamps,
                         [newMessage.senderId]: Date.now(),
                     },
-    
-                    botTyping: isBotMessage ? false : state.botTyping, // ✅ Stop botTyping when bot replies
+
                 }));
+
+                set({ botTyping: false });
     
                 // Clear any pending timeout when bot sends message
                 if (isBotMessage && get().botTypingTimeout) {
                     clearTimeout(get().botTypingTimeout);
                     set({ botTypingTimeout: null });
+                    set({ botTyping: false });
                 }
             });
             
@@ -165,7 +161,7 @@ export const useChatStore = create((set, get) => ({
     // Select a user for chat
     setSelectedUser: (selectedUser) => set({ selectedUser }),
     setContactSelected: (ContactSelected) => set({ ContactSelected }),
-    setBotTyping: (typingStatus) => set({ botTyping: typingStatus }),
+    setBotTyping: (BotTyping) => set({ BotTyping }),
     
     selectMeddyBotUser: async () => {
         const { users, getUsers, setSelectedUser } = get();

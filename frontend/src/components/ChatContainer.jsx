@@ -22,7 +22,7 @@ const ChatContainer = () => {
 
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
-
+ 
   useEffect(() => {
     getMessages(selectedUser._id);
     subscribeToMessages();
@@ -35,8 +35,7 @@ const ChatContainer = () => {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-  
-  useEffect(() => {
+    useEffect(() => {
     const socket = io();
 
     // Listen for the bot typing event and update the botTyping state

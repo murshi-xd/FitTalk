@@ -1,0 +1,16 @@
+http://localhost {
+    # Proxy requests to the backend service
+    reverse_proxy /api/* backend:5002
+
+    # Proxy requests to the frontend service
+    reverse_proxy / frontend:5173
+
+    # Proxy requests to the meddy_gpt service
+    reverse_proxy /meddy_gpt/* meddy_gpt:8080
+
+    # Optional: Enable logging
+    log {
+        output stdout
+        format console
+    }
+}

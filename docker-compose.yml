@@ -1,0 +1,50 @@
+
+services:
+
+  backend:
+    build: ./backend
+    networks:
+      - fittalk_net
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - PORT=5002
+      
+  frontend:
+    build: ./frontend
+    networks:
+      - fittalk_net
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host
+    depends_on:
+      - backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+      
+  meddy_gpt:
+    build: ./meddy_gpt
+    networks:
+      - fittalk_net
+    ports:
+      - "8080:8080"
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    env_file:
+      - ./meddy_gpt/.env
+    volumes:
+      - ./meddy_gpt:/app
+
+networks:
+  fittalk_net:
+    driver: bridge

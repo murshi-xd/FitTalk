@@ -1,0 +1,11 @@
+langchain_openai 
+langchain_core
+python-dotenv
+langchain_community
+pypdf
+langchainhub
+sentence_transformers
+PyPDF2
+langchain_pinecone
+flask
+flask-cors

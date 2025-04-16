@@ -1,72 +1,72 @@
+name: fittalk
+
 services:
 
-  backend:
-    build: ./backend
-    networks:
-      - fittalk_net
-    ports:
-      - "5002:5002"
+  api:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./backend/.env
     volumes:
       - ./backend:/app
       - /app/node_modules
-    environment:
-      - PORT=5002
-      
-  frontend:
-    build: ./frontend
     networks:
-      - fittalk_net
-    ports:
-      - "5173:5173"
-    command: npm run dev -- --host
-    depends_on:
-      - backend
+      - fittalk-network
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     restart: unless-stopped
-    env_file:
-      - ./backend/.env
+    env_file: ./frontend/.env
     volumes:
       - ./frontend:/app
       - /app/node_modules
-
-  meddy_gpt:
-    build: ./meddy_gpt
+    command: npm run dev -- --host
     networks:
-      - fittalk_net
-    ports:
-      - "8080:8080"
+      - fittalk-network
     depends_on:
-      - frontend
-      - backend
-    restart: unless-stopped
-    env_file:
-      - ./meddy_gpt/.env
-    volumes:
-      - ./meddy_gpt:/app
+      - api
+    
+  meddygpt:
+      build: 
+        context: ./meddy_gpt
+        dockerfile: Dockerfile
+      restart: unless-stopped
+      env_file: ./meddy_gpt/.env
+      ports:
+      - "8080:8080"
+      volumes:
+        - ./meddy_gpt:/app
+        - /app/node_modules
+      networks:
+        - fittalk-network
+      depends_on:
+        - api
+        - frontend
 
   caddy:
-    image: caddy:latest
-    networks:
-      - fittalk_net
-    ports:
-      - "80:80"
-      - "443:443"
+    image: caddy:2-alpine
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - fittalk-network
     depends_on:
+      - api
       - frontend
-      - backend
-      - meddy_gpt
-    restart: unless-stopped
+      - meddygpt
 
-networks:
-  fittalk_net:
-    driver: bridge
 
 volumes:
+  api_data:
   caddy_data:
   caddy_config:
-  backend_data:
-  frontend_data:
-  meddy_gpt_data:
+networks:
+  fittalk-network:
+    driver: bridge

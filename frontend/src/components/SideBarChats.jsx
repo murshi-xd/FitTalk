@@ -6,7 +6,7 @@ import { PlusCircleIcon, Search, Users } from "lucide-react";
 import ChatSearch from "./ChatSearch";        
 
 
-const Sidebar = () => {
+const SidebarChats = () => {
 
   // Selectors for reactive parts
   const lastMessages = useChatStore((state) => state.lastMessages);
@@ -119,4 +119,4 @@ const Sidebar = () => {
     </aside>
   );
 };
-export default Sidebar;
+export default SidebarChats;

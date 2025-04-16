@@ -8,5 +8,4 @@ RUN npm ci
 
 COPY . .
 
-EXPOSE 5173
 

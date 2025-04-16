@@ -16,40 +16,36 @@ import { useThemeStore } from './store/useThemeStore';
 
 
 const App = () => {
-  const {authUser,checkAuth,isCheckingAuth, onlineUsers} = useAuthStore() // auth user current value updating by calling checkauth functin which is a 
-                                                            // global state function. every time the page is reloded this cheking occurs by 
-                                                            // the api/check api call which is from the back end.
-  const{theme}= useThemeStore()
-
+  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
+  const { theme, hydrate } = useThemeStore(); // include hydrate
 
   useEffect(() => {
-    checkAuth()
+    checkAuth();
+    hydrate(); // <-- load theme from localStorage once browser is ready
+  }, [checkAuth, hydrate]);
 
-  },[checkAuth])
-
-  if(isCheckingAuth && !authUser) return (
-    <div className='flex items-center justify-center h-screen'>
-      <Loader className="size-10 animate-spin"/>
-    </div>
-  )
+  if (isCheckingAuth && !authUser)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="size-10 animate-spin" />
+      </div>
+    );
 
   return (
-    <div data-theme = {theme}>
-      <Navbar/>
+    <div data-theme={theme}>
+      <Navbar />
 
       <Routes>
-        <Route path='/' element={ authUser ? <Homepage/> : <Navigate to='/login'/>} />
-        <Route path='/signup' element={ !authUser ?  <SignUpPage/> : <Navigate to='/'/> } />
-        <Route path='/login' element={ !authUser ? <LoginPage/> : <Navigate to='/'/>} />
-        <Route path='/settings' element={  <SettingsPage/> } />
-        <Route path='/profile' element={ authUser ? <ProfilePage/> : <Navigate to='/login'/>} />
-
+        <Route path="/" element={authUser ? <Homepage /> : <Navigate to="/login" />} />
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+        <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
       </Routes>
 
-      <Toaster/>
-     
+      <Toaster />
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;

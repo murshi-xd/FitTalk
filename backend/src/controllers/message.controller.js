@@ -83,12 +83,18 @@ export const sendMessage = async (req, res) => {
           senderId: process.env.BOT_USER_ID,
         });
       }
+      
 
       // 🧠 Call Flask API
-      const flaskResponse = await axios.post(process.env.FLASK_API_URL, {
-        message: text,
-        user_id: senderId,
-      });
+      const flaskResponse = await axios.post(
+        process.env.FLASK_API_URL,  // URL to the Flask API
+        { message: text, user_id: senderId },  // Body of the request
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.MEDDY_AUTH_API_KEY}`,  // Sending your custom API key
+          },
+        }
+      );
 
       const botReply = flaskResponse.data.reply;
 

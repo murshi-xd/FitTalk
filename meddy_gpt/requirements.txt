@@ -9,3 +9,4 @@ PyPDF2
 langchain_pinecone
 flask
 flask-cors
+gunicorn

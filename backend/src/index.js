@@ -18,14 +18,24 @@ const PORT = process.env.PORT
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
+
+
 // Middleware to parse JSON request bodies
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
+
+
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: "https://auth.localhost",
     credentials:true,
     allowedHeaders: ["Content-Type", "Authorization"]
 }))
+
+// health check route
+app.get("/", (req, res) => {
+    res.send("API is running");
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
@@ -37,7 +47,6 @@ if(process.env.NODE_ENV ==="production"){
         res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
     })
 }
-
 
 
 server.listen(PORT, () => {

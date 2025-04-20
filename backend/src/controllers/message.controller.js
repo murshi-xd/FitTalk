@@ -81,6 +81,7 @@ export const sendMessage = async (req, res) => {
       if (userSocketId) {
         io.to(userSocketId).emit("botTyping", {
           senderId: process.env.BOT_USER_ID,
+          typing: true, // ✅ Tell frontend to show typing
         });
       }
       
@@ -108,13 +109,19 @@ export const sendMessage = async (req, res) => {
 
       await botMessage.save();
 
-      // 📡 Emit bot reply
       if (userSocketId) {
         io.to(userSocketId).emit("newMessage", botMessage);
-    
-        // ❌ Stop bot typing AFTER emitting the reply 
-        io.to(userSocketId).emit("botTyping", { senderId: process.env.BOT_USER_ID, typing: false });
-    }
+      
+        // ❌ Stop bot typing AFTER emitting the reply
+        io.to(userSocketId).emit("botTyping", {
+          senderId: process.env.BOT_USER_ID,
+          typing: false, // ✅ Tell frontend to stop typing indicator
+        });
+      }
+
+
+
+
     
     }
 

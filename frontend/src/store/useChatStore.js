@@ -106,20 +106,28 @@ export const useChatStore = create((set, get) => ({
         const socket = useAuthStore.getState().socket;
     
         try {
-            socket.on("botTyping", ({ senderId }) => {
+            socket.on("botTyping", ({ senderId, typing }) => {
                 const selectedUser = get().selectedUser;
                 if (selectedUser && selectedUser._id === senderId) {
-                    set({ botTyping: true });
-    
-                    // Set a timeout to clear botTyping if no message arrives in 10s
+                  set({ botTyping: typing });
+              
+                  if (typing) {
+                    // Set a timeout to clear botTyping if no message arrives
                     const timeout = setTimeout(() => {
-                        set({ botTyping: false });
+                      set({ botTyping: false });
                     }, 10000);
-    
                     set({ botTypingTimeout: timeout });
+                  } else {
+                    // If typing is false, clear the timeout immediately
+                    if (get().botTypingTimeout) {
+                      clearTimeout(get().botTypingTimeout);
+                      set({ botTypingTimeout: null });
+                    }
+                  }
                 }
-            });
-    
+              });
+
+              
             socket.on("newMessage", (newMessage) => {
                 const isBotMessage =
                     get().selectedUser?._id === newMessage.senderId && newMessage.is_bot;
@@ -145,10 +153,10 @@ export const useChatStore = create((set, get) => ({
                 set({ botTyping: false });
     
                 // Clear any pending timeout when bot sends message
-                if (isBotMessage && get().botTypingTimeout) {
-                    clearTimeout(get().botTypingTimeout);
-                    set({ botTypingTimeout: null });
-                    set({ botTyping: false });
+                const timeout = get().botTypingTimeout;
+                if (timeout) {
+                  clearTimeout(timeout);
+                  set({ botTypingTimeout: null });
                 }
             });
             

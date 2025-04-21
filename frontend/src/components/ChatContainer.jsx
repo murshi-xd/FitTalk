@@ -20,36 +20,27 @@ const ChatContainer = () => {
     botTyping,
   } = useChatStore();
 
-  const { authUser } = useAuthStore();
+  const { authUser,socket } = useAuthStore();
   const messageEndRef = useRef(null);
  
   useEffect(() => {
+    if (!authUser || !socket) return;
+  
     getMessages(selectedUser._id);
     subscribeToMessages();
-
+  
     return () => unsubscribeFromMessages();
-  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+  }, [selectedUser._id, authUser, socket, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-    useEffect(() => {
-    const socket = io();
+   
 
-    // Listen for the bot typing event and update the botTyping state
-    socket.on("botTyping", (data) => {
-      if (data.senderId === process.env.BOT_USER_ID) {
-        setBotTyping(data.typing); // Set bot typing to true or false
-      }
-    });
 
-    return () => {
-      socket.off("botTyping"); // Clean up the socket listener
-    };
-  }, [setBotTyping]);
-
+  
   if (isMessagesLoading) {
     return (
       <div className="flex-1 flex flex-col overflow-auto">

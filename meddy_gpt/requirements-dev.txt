@@ -1,0 +1,11 @@
+# Include prod dependencies
+-r requirements-prod.txt
+
+# Dev only
+ipython
+pytest
+watchdog  # optional: for file watching / reload
+black
+# PDF support
+pypdf
+PyPDF2

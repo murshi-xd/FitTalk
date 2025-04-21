@@ -1,0 +1,14 @@
+flask
+flask-cors
+gunicorn
+python-dotenv
+
+# LangChain & dependencies
+langchain_openai
+langchain_core
+langchain_community
+langchainhub
+langchain_pinecone
+
+# SentenceTransformers & embeddings
+sentence_transformers

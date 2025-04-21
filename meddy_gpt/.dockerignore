@@ -5,3 +5,6 @@ __pycache__/
 *.log
 
 Data/
+src/functions/setup.py
+src/functions/store_index.py
+src/static/

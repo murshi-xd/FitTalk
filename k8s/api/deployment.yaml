@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fittalk-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fittalk-api
+  template:
+    metadata:
+      labels:
+        app: fittalk-api
+    spec:
+      serviceAccountName: secrets-store-sa
+      containers:
+        - name: api
+          image: murshii/fittalk-api:latest
+          ports:
+            - containerPort: 5002
+          envFrom:
+            - secretRef:
+                name: backend-secrets-sync
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: fittalk-api-secrets

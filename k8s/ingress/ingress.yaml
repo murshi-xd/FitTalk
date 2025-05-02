@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fittalk-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    acme.cert-manager.io/http01-ingress-class: nginx 
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - fit-talk.auradev.in
+      secretName: fittalk-tls
+  rules:
+    - host: fit-talk.auradev.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: fittalk-frontend
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: fittalk-api
+                port:
+                  number: 80
+          - path: /ask
+            pathType: Prefix
+            backend:
+              service:
+                name: fittalk-meddygpt
+                port:
+                  number: 80
+

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+.vscode
+*.log
+
+Data/
+src/functions/setup.py
+src/functions/store_index.py
+src/static/

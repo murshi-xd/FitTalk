@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fittalk-meddygpt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fittalk-meddygpt
+  template:
+    metadata:
+      labels:
+        app: fittalk-meddygpt
+    spec:
+      serviceAccountName: secrets-store-sa
+      containers:
+        - name: meddygpt
+          image: murshii/fittalk-meddygpt:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: meddygpt-secrets-sync
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: fittalk-meddygpt-secrets

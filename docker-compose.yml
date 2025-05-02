@@ -1,0 +1,63 @@
+name: fittalk
+
+services:
+  api:
+    build:
+      context: ./backend
+      target: production
+    env_file: ./backend/.env
+    networks:
+      - fittalk-network
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+      args:
+        VITE_API_URL: https://fit-talk.auradev.in
+    env_file: ./frontend/.env
+    networks:
+      - fittalk-network
+    depends_on:
+      - api
+
+  meddygpt:
+    build:
+      context: ./meddy_gpt
+      target: production
+    env_file: ./meddy_gpt/.env
+    volumes:
+      - hf_cache:/app/.cache/huggingface
+    networks:
+      - fittalk-network
+    depends_on:
+      - api
+      - frontend
+
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+        DOMAIN_NAME: ${DOMAIN_NAME}
+    volumes:
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        - ./frontend/dist:/usr/share/nginx/html:ro
+        - ./nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - fittalk-network
+    depends_on:
+      - api
+      - frontend
+      - meddygpt
+
+
+
+volumes:
+  hf_cache:
+
+networks:
+  fittalk-network:
+    driver: bridge

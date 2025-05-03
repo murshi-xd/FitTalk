@@ -7,6 +7,12 @@ import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 
+const flaskApiUrl =
+  process.env.NODE_ENV === "production"
+    ? process.env.FLASK_API_URL
+    : "http://meddygpt:8080/ask";
+
+
 
 export const getUsersForSidebar = async (req, res) => {
     // get user id, get user ids other than/ != current user for the side bar 
@@ -86,16 +92,16 @@ export const sendMessage = async (req, res) => {
       }
       
 
-      // 🧠 Call Flask API
-      const flaskResponse = await axios.post(
-        process.env.FLASK_API_URL,  // URL to the Flask API
-        { message: text, user_id: senderId },  // Body of the request
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.MEDDY_AUTH_API_KEY}`,  // Sending your custom API key
-          },
-        }
-      );
+        // 🧠 Call Flask API
+        const flaskResponse = await axios.post(
+          flaskApiUrl,
+          { message: text, user_id: senderId },
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.MEDDY_AUTH_API_KEY}`,
+            },
+          }
+        );
 
       const botReply = flaskResponse.data.reply;
 
